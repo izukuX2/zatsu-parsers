@@ -10,8 +10,10 @@ import org.koitharu.kotatsu.parsers.core.PagedMangaParser
 import org.koitharu.kotatsu.parsers.model.*
 import org.koitharu.kotatsu.parsers.util.*
 import org.koitharu.kotatsu.parsers.util.json.toJSONArrayOrNull
+import org.koitharu.kotatsu.parsers.util.json.toJSONObjectOrNull
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.text.RegexOption
 
 @MangaSourceParser("AZORAMOON", "Azoramoon", "ar")
 internal class Azoramoon(context: MangaLoaderContext) :
@@ -317,16 +319,21 @@ internal class Azoramoon(context: MangaLoaderContext) :
 		if (seriesSlug.isEmpty()) return emptyList()
 
 		val payload = extractNextPushData(doc)
-		val chaptersIndex = payload.indexOf("\"chapters\":[")
-		if (chaptersIndex == -1) return emptyList()
-
-		val arrayStart = payload.indexOf('[', chaptersIndex)
-		if (arrayStart == -1) return emptyList()
-
-		val arrayEnd = findMatchingBracket(payload, arrayStart, '[', ']')
-		if (arrayEnd == -1) return emptyList()
-
-		val chaptersJson = payload.substring(arrayStart, arrayEnd + 1).toJSONArrayOrNull() ?: return emptyList()
+		
+		// First try to parse as full JSON object and navigate to post.chapters
+		val chaptersJson = try {
+			val jsonObject = payload.toJSONObjectOrNull()
+			if (jsonObject != null) {
+				// Navigate to post.chapters - this is where chapters are in the embedded JSON
+				val postObject = jsonObject.optJSONObject("post")
+				postObject?.optJSONArray("chapters")
+			} else {
+				// Fallback: try to find chapters array directly in the payload
+				findChaptersArrayInPayload(payload)
+			}
+		} catch (e: Exception) {
+			findChaptersArrayInPayload(payload)
+		} ?: return emptyList()
 
 		val chapters = ArrayList<MangaChapter>(chaptersJson.length())
 		for (i in 0 until chaptersJson.length()) {
@@ -356,15 +363,34 @@ internal class Azoramoon(context: MangaLoaderContext) :
 		return chapters.sortedBy { it.number }
 	}
 
+	private fun findChaptersArrayInPayload(payload: String): JSONArray? {
+		val chaptersIndex = payload.indexOf("\"chapters\":[")
+		if (chaptersIndex == -1) return null
+
+		val arrayStart = payload.indexOf('[', chaptersIndex)
+		if (arrayStart == -1) return null
+
+		val arrayEnd = findMatchingBracket(payload, arrayStart, '[', ']')
+		if (arrayEnd == -1) return null
+
+		val chaptersJson = payload.substring(arrayStart, arrayEnd + 1).toJSONArrayOrNull()
+		return chaptersJson
+	}
+
 	private fun extractNextPushData(doc: Document): String {
 		val sb = StringBuilder()
 		for (script in doc.select("script")) {
-			val raw = script.data().substringBetween("self.__next_f.push(", ")", "").trim()
-			if (raw.isEmpty()) continue
-
-			val payload = raw.toJSONArrayOrNull() ?: continue
-			for (i in 0 until payload.length()) {
-				(payload.opt(i) as? String)?.let(sb::append)
+			val scriptContent = script.html()
+			// Look for self.__next_f.push([1,"..."]) pattern
+			// The JSON data is embedded as a string in the second position of the array
+			val regex = Regex("""self\.__next_f\.push\(\[\d+,\s*"(.+?)"\]\)""", RegexOption.DOT_MATCHES_ALL)
+			val match = regex.find(scriptContent)
+			if (match != null && match.groupValues.size > 1) {
+				var jsonStr = match.groupValues[1]
+				// Unescape the JSON string (remove escaped quotes and backslashes)
+				jsonStr = jsonStr.replace("\\\"", "\"")
+					.replace("\\\\", "\\")
+				sb.append(jsonStr)
 			}
 		}
 		return sb.toString()
