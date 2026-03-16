@@ -8,7 +8,7 @@ import java.util.Locale
 
 @MangaSourceParser("YONABAR", "YonaBar", "ar")
 internal class YonaBar(context: MangaLoaderContext) :
-	MadaraParser(context, MangaParserSource.YONABAR, "yonabar.xyz", 10) {
+	MadaraParser(context, MangaParserSource.YONABAR, "yonaber.com", 10) {
 	override val sourceLocale: Locale = Locale.ENGLISH
 	override val listUrl = "yaoi/"
 }

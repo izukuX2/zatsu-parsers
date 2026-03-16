@@ -7,4 +7,4 @@ import org.koitharu.kotatsu.parsers.site.madara.MadaraParser
 
 @MangaSourceParser("MANGALIONZ", "Manga-Lionz", "ar")
 internal class MangaLionz(context: MangaLoaderContext) :
-	MadaraParser(context, MangaParserSource.MANGALIONZ, "manga-lionz.com", pageSize = 10)
+	MadaraParser(context, MangaParserSource.MANGALIONZ, "manga-lionz.org", pageSize = 10)

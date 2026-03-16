@@ -9,7 +9,7 @@ import org.koitharu.kotatsu.parsers.site.mangareader.MangaReaderParser
 
 @MangaSourceParser("ARAREASCANS", "ArAreaScans", "ar", ContentType.HENTAI)
 internal class ArAreaScans(context: MangaLoaderContext) :
-	MangaReaderParser(context, MangaParserSource.ARAREASCANS, "ar.kenmanga.com", pageSize = 20, searchPageSize = 10) {
+	MangaReaderParser(context, MangaParserSource.ARAREASCANS, "ar.areascans.org", pageSize = 20, searchPageSize = 10) {
 
 	override val filterCapabilities: MangaListFilterCapabilities
 		get() = super.filterCapabilities.copy(
