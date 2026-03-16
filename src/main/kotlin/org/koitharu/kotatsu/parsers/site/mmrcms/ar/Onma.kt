@@ -12,7 +12,7 @@ import org.koitharu.kotatsu.parsers.util.*
 import org.koitharu.kotatsu.parsers.util.json.mapJSON
 import java.util.*
 
-@MangaSourceParser("ONMA", "Onma", "ar")
+@MangaSourceParser("ONMA", "Onma", "ar", ContentType.HENTAI)
 internal class Onma(context: MangaLoaderContext) :
 	MmrcmsParser(context, MangaParserSource.ONMA, "onma.me") {
 
