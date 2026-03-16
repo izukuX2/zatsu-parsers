@@ -3,13 +3,14 @@ package org.koitharu.kotatsu.parsers.site.madara.ar
 import org.jsoup.nodes.Document
 import org.koitharu.kotatsu.parsers.MangaLoaderContext
 import org.koitharu.kotatsu.parsers.MangaSourceParser
+import org.koitharu.kotatsu.parsers.model.ContentType
 import org.koitharu.kotatsu.parsers.model.MangaChapter
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.site.madara.MadaraParser
 import org.koitharu.kotatsu.parsers.util.*
 import java.text.SimpleDateFormat
 
-@MangaSourceParser("LEKMANGACOM", "LekMangaCom", "ar")
+@MangaSourceParser("LEKMANGACOM", "LekMangaCom", "ar", ContentType.HENTAI)
 internal class LekMangaCom(context: MangaLoaderContext) :
 	MadaraParser(context, MangaParserSource.LEKMANGACOM, "lekmanga.com") {
 	override val listUrl = "lekmanga/"
